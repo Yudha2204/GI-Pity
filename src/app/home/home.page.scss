@@ -1,0 +1,119 @@
+ion-toolbar {
+    --background: #343e59;
+    --border-color: #343e59;
+    border-bottom: 1px solid #566385;
+    --color: #ffffff;
+    --padding-start: 0;
+}
+
+ion-content {
+    --background: #343e59;
+    .row {
+        padding: 18px 18px 0 18px;
+        .title {
+            font-size: 24px;
+            color: #ffffff;
+            text-align: left;
+        }
+        .add-account {
+            text-align: right;
+            font-size: 26px;
+            ion-button {
+                margin-top: -10px;
+                --background: #fff;
+                --color: #343e59;
+            }
+        }
+    }
+}
+
+.custom-size-btn {
+    --border-radius: 40px;
+    --border-color: #fff;
+    --background-activated: #fff;
+    --color-activated: #000;
+    height: 35px;
+}
+
+.account {
+    padding: 0px 18px;
+}
+
+ion-button {
+    --color: #ffffff;
+}
+
+.box {
+    margin: 5px 20px 20px 20px;
+    padding: 25px 20px;
+    box-shadow: 0px 1px 15px 1px rgba(69, 65, 78, 0.08);
+    background-color: #2b2d3e;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-shadow: 0 1px 1px 1px #666;
+    position: relative;
+    border-radius: 5px;
+    box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+    .details {
+        position: absolute;
+        color: #fff;
+        transform: scale(0.8) translate(-42px, -22px);
+        h1,
+        h3 {
+            font-weight: 600;
+            margin: 5px;
+        }
+    }
+    .detail-pity {
+        width: 100vw;
+        color: #fff;
+        transform: scale(0.8) translate(-50px, -22px);
+        ion-chip {
+            transform: translate(-10px, 0px);
+        }
+    }
+}
+
+.box1 {
+    // background-image: linear-gradient(135deg, #ffd3a5 10%, #fd6585 100%);
+    background-color: #2b2d3e;
+}
+
+.box3 {
+    padding: 0;
+    padding-top: 10px;
+}
+
+//drag and drop
+.example-list {
+    width: 500px;
+    max-width: 100%;
+    // border: solid 1px #ccc;
+    min-height: 60px;
+    display: block;
+    // background: white;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.cdk-drag-preview {
+    box-sizing: border-box;
+    border-radius: 4px;
+    box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.cdk-drag-placeholder {
+    opacity: 0;
+}
+
+.cdk-drag-animating {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.example-box:last-child {
+    border: none;
+}
+
+.example-list.cdk-drop-list-dragging .example-box:not(.cdk-drag-placeholder) {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}

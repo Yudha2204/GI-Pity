@@ -1,0 +1,23 @@
+<ion-header mode="md" translucent="true" class="ion-no-border">
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-button (click)="onDismiss()">
+                <ion-icon name="chevron-back-outline"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+        <ion-title>Block</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+    <div *ngIf="type == 'Add Account'">
+        <ion-item>
+            <ion-label>Account Name / ID</ion-label>
+            <ion-input></ion-input>
+        </ion-item>
+    </div>
+
+    <div *ngIf="type == 'Refresh'">
+        test refresh
+    </div>
+</ion-content>

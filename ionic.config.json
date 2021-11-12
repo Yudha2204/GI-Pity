@@ -1,0 +1,7 @@
+{
+  "name": "Genshin-Pity",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
