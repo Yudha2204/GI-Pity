@@ -1,6 +1,10 @@
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Component, OnInit } from '@angular/core';
-import { ModalController } from '@ionic/angular';
+import {
+  AlertController,
+  ModalController,
+  ToastController,
+} from '@ionic/angular';
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -39,9 +43,18 @@ export type ChartOptions = {
 };
 
 export type ChartData = {
-  data : number[];
-  labels : string[];
-}
+  data: number[];
+  labels: string[];
+};
+
+export type ChipData = {
+  star: Star;
+};
+
+export type Star = {
+  name: string;
+  pity: number;
+};
 
 @Component({
   selector: 'app-home',
@@ -50,47 +63,59 @@ export type ChartData = {
 })
 export class HomePage implements OnInit {
   public chartData = new Map<String, ChartData[]>();
-  public account : string = null;
-  public data : any[] = [];
-  public isLoading : boolean = false;
-  public bannerType : any[] = [
-    {Name : 'Beginner', MaxPity : 20},
-    {Name : 'Standart', MaxPity : 90},
-    {Name : 'Weapon', MaxPity : 80},
-    {Name : 'Character', MaxPity : 90}
-  ]
+  public chipData = new Map<String, Star[]>();
+  public enableSort: boolean = true;
+  public selectedAccount: string = '1';
+  public savedAccount: string[];
+  public data: any[] = [];
+  public isLoading: boolean = false;
+  public bannerType: any[] = [
+    { Name: 'Beginner' },
+    { Name: 'Standart' },
+    { Name: 'Weapon' },
+    { Name: 'Character' },
+  ];
   public options: Partial<ChartOptions>;
 
-  constructor(private modalCtrl : ModalController, private service : GIService) {
-    this.init();
-  }
+  constructor(
+    private modalCtrl: ModalController,
+    private toastCtrl: ToastController,
+    private alertCtrl: AlertController,
+    private service: GIService
+  ) {}
 
   private init() {
     let banner = localStorage.getItem('banner');
-    this.account = localStorage.getItem('account');
-    if (banner)
-      this.bannerType = JSON.parse(banner);
+    let account = localStorage.getItem('selectedAccount');
+    let accountData = localStorage.getItem('account');
+    let sort = localStorage.getItem('sort');
+    if (banner) this.bannerType = JSON.parse(banner);
+
+    if (account) this.selectedAccount = account;
+
+    if (sort) this.enableSort = Boolean(sort);
+
+    if (accountData) {
+      this.savedAccount = JSON.parse(accountData);
+    }
+    this.spackLine();
   }
 
   async ngOnInit() {
     this.isLoading = true;
-    this.spackLine();
-    this.data = await new Promise((resolve, reject) => {
-      this.service.getList('505732940488114177').subscribe((res : any) => {
-        resolve(res);
-      }, err => {
-        reject(err);
-      })
-    })
-    this.getSeries();
+    let now = performance.now();
+    this.init();
+    await this.getSeries();
+    let end = performance.now();
+    console.log('time taken', end - now);
     this.isLoading = false;
   }
 
-  async openModal(type : 'Add Account' | 'Refresh'){
+  async openModal(type: 'Add' | 'Refresh' | 'Search') {
     const modal = await this.modalCtrl.create({
-      component : AccountComponent,
-      componentProps : { type : type }
-    })
+      component: AccountComponent,
+      componentProps: { type: type },
+    });
     return await modal.present();
   }
 
@@ -103,19 +128,63 @@ export class HomePage implements OnInit {
     localStorage.setItem('banner', JSON.stringify(this.bannerType));
   }
 
-  getSeries() {
-    // Object.values(this.data['Beginner']).reduce((total, date) => (date ==))
-    // console.log();
-    let data = Object.values(this.data['Beginner']).map((x : any) => {
-      return {...x, date : new Date(x.id / 1000000).toLocaleDateString()}
-    })
-    console.log(data);
+  async getSeries() {
     for (let i = 0; i < this.bannerType.length; i++) {
-      let chartData  = [
-        { data : [1, 8, 18, 44, 0], labels : ['21 Jan', '22 Jan', '23 Jan', '24 Jan', '25 Jan'] },
-      ]
-      this.chartData.set(this.bannerType[i].Name, chartData)
+      let data: any = await new Promise((resolve, reject) => {
+        this.service
+          .getListBanner(this.selectedAccount, this.bannerType[i].Name)
+          .subscribe(
+            (res: any) => {
+              resolve(res.reverse());
+            },
+            async (err) => {
+              reject(err);
+              await this.showToast(err);
+            }
+          );
+      });
+      let data5star = await this.get5star(this.bannerType[i].Name);
+      this.chipData.set(this.bannerType[i].Name, Object.values(data5star));
+      let dataValue: any[] = Object.values(this.groupBy(data));
+      dataValue = dataValue.slice(dataValue.length - 5);
+      let value: number[] = [];
+      for (let j = 0; j < dataValue.length; j++) {
+        value.push(dataValue[j].length);
+      }
+      let dataLabels = Object.keys(this.groupBy(data));
+      dataLabels = dataLabels.slice(dataLabels.length - 5);
+      this.chartData.set(this.bannerType[i].Name, [
+        { data: value, labels: dataLabels },
+      ]);
     }
+  }
+
+  async get5star(bannerName: string) {
+    let data5star = await new Promise((resolve, reject) => {
+      this.service.getPity(this.selectedAccount, bannerName).subscribe(
+        (res: any) => {
+          resolve(res);
+        },
+        async (err) => {
+          reject(err);
+          await this.showToast(err);
+        }
+      );
+    });
+    return data5star;
+  }
+
+  groupBy(data: any[]) {
+    return data.reduce(function (r, a) {
+      r[a.time.split(' ')[0]] = r[a.time.split(' ')[0]] || [];
+      r[a.time.split(' ')[0]].push(a);
+      return r;
+    }, Object.create(null));
+  }
+
+  async onChangeAccount() {
+    localStorage.setItem('selectedAccount', this.selectedAccount);
+    await this.ngOnInit();
   }
 
   spackLine() {
@@ -144,16 +213,16 @@ export class HomePage implements OnInit {
           bottom: 10,
         },
       },
-      colors: ['#ffd3a5'],
+      colors: ['#de542c'],
       stroke: {
         width: 2,
-        colors: ['#ffd3a5'],
+        colors: ['#de542c'],
       },
       fill: {
-        colors: ['#ffd3a5'],
+        colors: ['#ef7e32'],
         gradient: {
-          gradientToColors: ['#2b2d3e'],
-          opacityTo: 0.2,
+          gradientToColors: ['#ef7e323b'],
+          opacityTo: 0.6,
         },
       },
       tooltip: {
@@ -164,7 +233,7 @@ export class HomePage implements OnInit {
         y: {
           title: {
             formatter: function formatter(val) {
-              return "Pulls"; // remove title in tooltip
+              return 'Pulls'; // remove title in tooltip
             },
           },
         },
@@ -172,8 +241,43 @@ export class HomePage implements OnInit {
     };
   }
 
-  async doRefresh(e){
+  async doRefresh(e) {
     await this.ngOnInit();
     e.target.complete();
+  }
+
+  async openAlert() {
+    let alert = await this.alertCtrl.create({
+      header: 'Delete Account',
+      message: `Are You Sure Delete ${this.selectedAccount} account?`,
+      buttons: [
+        {
+          text: 'Cancel',
+        },
+        {
+          text: 'Yes',
+          handler: async () => {
+            let account = JSON.parse(localStorage.getItem('account'));
+            let filterAccount = account.filter(
+              (x) => x !== this.selectedAccount
+            );
+            localStorage.setItem('selectedAccount', '1');
+            localStorage.setItem('account', JSON.stringify(filterAccount));
+            await this.ngOnInit();
+          },
+        },
+      ],
+    });
+
+    return await alert.present();
+  }
+
+  async showToast(msg: string) {
+    let toast = await this.toastCtrl.create({
+      message: msg,
+      mode: 'ios',
+    });
+
+    return await toast.present();
   }
 }

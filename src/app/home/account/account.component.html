@@ -5,19 +5,56 @@
                 <ion-icon name="chevron-back-outline"></ion-icon>
             </ion-button>
         </ion-buttons>
-        <ion-title>Block</ion-title>
+        <ion-buttons slot="end">
+            <ion-button>
+                <ion-icon name="help-outline"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+        <ion-title>{{type}} Account</ion-title>
     </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-    <div *ngIf="type == 'Add Account'">
-        <ion-item>
-            <ion-label>Account Name / ID</ion-label>
-            <ion-input></ion-input>
-        </ion-item>
+    <div *ngIf="type == 'Add'">
+        <form [formGroup]="formGroup">
+            <div class="form-field">
+                <label [ngClass]="focused('name') ? 'label-focused' : ''">Account Name / ID</label>
+                <input formControlName="name" (focus)="focused('name')" (blur)="onBlur($event, 'name')" />
+            </div>
+            <div class="form-field">
+                <label [ngClass]="focused('url') ? 'label-focused' : ''">URL</label>
+                <textarea formControlName="url" rows="8"> </textarea>
+            </div>
+            <div style="text-align: center; transform: translateY(-15px);">
+                Dont know how to get your link? <a href="#">here</a>
+            </div>
+            <div>
+                <ion-button expand='block' (click)="saveAccount()">
+                    Save
+                </ion-button>
+            </div>
+        </form>
     </div>
 
     <div *ngIf="type == 'Refresh'">
-        test refresh
+        <div class="form-field">
+            <label [ngClass]="focused('name') ? 'label-focused' : ''">Account Name / ID</label>
+            <input formControlName="name" (focus)="focused('name')" (blur)="onBlur($event, 'name')" />
+        </div>
+        </div>
+        
+        <div *ngIf="type == 'Search'">
+            <form [formGroup]="formGroup">
+                <div class="form-field">
+                    <label [ngClass]="focused('name') ? 'label-focused' : ''">Account Name / ID</label>
+                    <input formControlName="name" (focus)="focused('name')" placeholder="Search Account"
+                        (blur)="onBlur($event, 'name')" />
+                </div>
+            </form>
+            <div style="text-align: right;">
+                <ion-button (click)="searchAccount()">
+                    Search
+                </ion-button>
+            </div>
     </div>
 </ion-content>

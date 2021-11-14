@@ -1,7 +1,10 @@
 <ion-header mode="md" translucent="true" class="ion-no-border">
     <ion-toolbar>
         <ion-buttons slot="end">
-            <ion-button (click)="openModal('Add Account')">
+            <ion-button (click)="openAlert()" *ngIf="selectedAccount != '1'">
+                <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+            <ion-button (click)="openModal('Add')">
                 <ion-icon name="add"></ion-icon>
             </ion-button>
         </ion-buttons>
@@ -16,38 +19,46 @@
 
     <ion-row class="account">
         <ion-col size="4 ">
-            <ion-button class="custom-size-btn" fill="outline ">
+            <ion-button class="custom-size-btn" fill="outline" (click)="openModal('Search')">
                 <span>Search</span>
                 <ion-icon slot="end" name="search"></ion-icon>
             </ion-button>
         </ion-col>
         <ion-col size="8">
-            <ion-select value="1" style="width: 100%; color: white;">
-                <ion-select-option value="1 ">Select Account</ion-select-option>
-                <ion-select-option value="cat ">Cat</ion-select-option>
-                <ion-select-option value="dog ">Dog</ion-select-option>
+            <ion-select [(ngModel)]="selectedAccount" (ngModelChange)="onChangeAccount()" style="width: 100%; color: white;">
+                <ion-select-option value="1">Select Account</ion-select-option>
+                <ion-select-option *ngFor="let acc of savedAccount" [value]="acc">{{acc}}</ion-select-option>
             </ion-select>
         </ion-col>
     </ion-row>
 
-    <div cdkDropList class="example-list " (cdkDropListDropped)="drop($event)" *ngIf="!isLoading">
-        <div class="box box1 " *ngFor="let banner of bannerType " cdkDrag>
-            <div class="details ">
-                <h1>{{banner.Name}} Banner</h1>
-                <h3>Pity 20</h3>
-                <ion-button color="light ">
-                    Detail
-                </ion-button>
-            </div>
-
-            <apx-chart [chart]="options.chart " [series]="chartData.get(banner.Name)" [labels]="chartData.get(banner.Name)[0].labels" [stroke]="options.stroke" [markers]="options.markers" [grid]="options.grid " [tooltip]="options.tooltip" [colors]="options.colors"></apx-chart>
-            <div class="detail-pity">
-                <hr color="white ">
-                <ion-chip outline color="light">
-                    <ion-label>Xiao 56</ion-label>
-                </ion-chip>
-            </div>
-        </div>
+    <div cdkDropList (cdkDropListDropped)="drop($event)" *ngIf="!isLoading">
+        <ng-container *ngFor="let banner of bannerType; let i = index">
+            <div class="box box1" cdkDrag [cdkDragDisabled]="enableSort"
+                *ngIf="chartData.get(banner.Name)[0].labels.length != 0">
+                <div class="details">
+                    <h1>{{banner.Name}} Banner</h1>
+                    <h3>Pity 20</h3>
+                    <ion-button color="light ">
+                        Detail
+                    </ion-button>
+                </div>
+                    <apx-chart [chart]="options.chart " [series]="chartData.get(banner.Name)" [fill]="options.fill"
+                        [labels]="chartData.get(banner.Name)[0].labels" [stroke]="options.stroke" [markers]="options.markers"
+                        [grid]="options.grid " [tooltip]="options.tooltip" [colors]="options.colors"></apx-chart>
+                    <div class="detail-pity">
+                        <hr color="white ">
+                    <ion-chip outline color="light" *ngFor="let star of chipData.get(banner.Name)">
+                        <ion-label>{{star.name}} <span>{{star.pity}}</span></ion-label>
+                    </ion-chip>
+                    </div>
+                    </div>
+                    <div *ngIf="chartData.get(banner.Name)[0].labels.length == 0 && i == 3"
+                        style="text-align: center; color: white; transform: translateY(100px);">Please
+                        Select An
+                        Account
+                    </div>
+                    </ng-container>
     </div>
 
     <!-- <div class="box box2 ">

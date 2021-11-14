@@ -14,3 +14,22 @@ ion-content {
     --padding-top: 18px;
     --padding-bottom: 18px;
 }
+
+ion-button {
+    --box-shadow: none;
+    --border-radius: 10px;
+    --background: linear-gradient(
+      90deg,
+      rgb(159, 245, 241) 0%,
+      rgb(46, 204, 243) 100%
+    );
+    height: 48px;
+    font-size: 1rem;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    text-transform: initial;
+  }
+
+  .form-field {
+      margin-bottom: 15px;
+  }
