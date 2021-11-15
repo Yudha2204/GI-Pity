@@ -160,7 +160,7 @@ export class HomePage implements OnInit {
       grid: {
         padding: {
           top: 20,
-          left: 110,
+          left: 100,
           bottom: 10,
         },
       },

@@ -35,14 +35,16 @@
     <div cdkDropList (cdkDropListDropped)="drop($event)" *ngIf="!model.isLoading">
         <ng-container *ngFor="let banner of model.bannerType; let i = index">
             <div class="box box1" cdkDrag [cdkDragDisabled]="model.disableSort" *ngIf="model.chartData.get(banner.Name)[0].labels.length != 0">
+                <div class="button">
+                    <ion-button size="small" [routerLink]="'/detail/' + model.selectedAccount + '/' + banner.Name">
+                        <ion-icon name="menu-outline"></ion-icon>
+                    </ion-button>
+                </div>
                 <div class="details">
                     <h1>{{banner.Name}} Banner</h1>
                     <h3>Pity 20</h3>
-                    <ion-button color="light ">
-                        Detail
-                    </ion-button>
                 </div>
-                <apx-chart [chart]="options.chart " [series]="model.chartData.get(banner.Name)" [fill]="options.fill" [labels]="model.chartData.get(banner.Name)[0].labels" [stroke]="options.stroke" [markers]="options.markers" [grid]="options.grid " [tooltip]="options.tooltip"
+                <apx-chart [chart]="options.chart" [series]="model.chartData.get(banner.Name)" [fill]="options.fill" [labels]="model.chartData.get(banner.Name)[0].labels" [stroke]="options.stroke" [markers]="options.markers" [grid]="options.grid " [tooltip]="options.tooltip"
                     [colors]="options.colors"></apx-chart>
                 <div class="detail-pity">
                     <hr color="white ">
