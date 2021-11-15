@@ -1,7 +1,7 @@
 <ion-header mode="md" translucent="true" class="ion-no-border">
     <ion-toolbar>
         <ion-buttons slot="end">
-            <ion-button (click)="openAlert()" *ngIf="selectedAccount != '1'">
+            <ion-button (click)="openAlert()" *ngIf="model.selectedAccount != '1'">
                 <ion-icon name="trash-outline"></ion-icon>
             </ion-button>
             <ion-button (click)="openModal('Add')">
@@ -25,17 +25,16 @@
             </ion-button>
         </ion-col>
         <ion-col size="8">
-            <ion-select [(ngModel)]="selectedAccount" (ngModelChange)="onChangeAccount()" style="width: 100%; color: white;">
+            <ion-select [(ngModel)]="model.selectedAccount" (ngModelChange)="onChangeAccount()" style="width: 100%; color: white;">
                 <ion-select-option value="1">Select Account</ion-select-option>
-                <ion-select-option *ngFor="let acc of savedAccount" [value]="acc">{{acc}}</ion-select-option>
+                <ion-select-option *ngFor="let acc of model.savedAccount" [value]="acc">{{acc}}</ion-select-option>
             </ion-select>
         </ion-col>
     </ion-row>
 
-    <div cdkDropList (cdkDropListDropped)="drop($event)" *ngIf="!isLoading">
-        <ng-container *ngFor="let banner of bannerType; let i = index">
-            <div class="box box1" cdkDrag [cdkDragDisabled]="enableSort"
-                *ngIf="chartData.get(banner.Name)[0].labels.length != 0">
+    <div cdkDropList (cdkDropListDropped)="drop($event)" *ngIf="!model.isLoading">
+        <ng-container *ngFor="let banner of model.bannerType; let i = index">
+            <div class="box box1" cdkDrag [cdkDragDisabled]="model.disableSort" *ngIf="model.chartData.get(banner.Name)[0].labels.length != 0">
                 <div class="details">
                     <h1>{{banner.Name}} Banner</h1>
                     <h3>Pity 20</h3>
@@ -43,22 +42,18 @@
                         Detail
                     </ion-button>
                 </div>
-                    <apx-chart [chart]="options.chart " [series]="chartData.get(banner.Name)" [fill]="options.fill"
-                        [labels]="chartData.get(banner.Name)[0].labels" [stroke]="options.stroke" [markers]="options.markers"
-                        [grid]="options.grid " [tooltip]="options.tooltip" [colors]="options.colors"></apx-chart>
-                    <div class="detail-pity">
-                        <hr color="white ">
-                    <ion-chip outline color="light" *ngFor="let star of chipData.get(banner.Name)">
+                <apx-chart [chart]="options.chart " [series]="model.chartData.get(banner.Name)" [fill]="options.fill" [labels]="model.chartData.get(banner.Name)[0].labels" [stroke]="options.stroke" [markers]="options.markers" [grid]="options.grid " [tooltip]="options.tooltip"
+                    [colors]="options.colors"></apx-chart>
+                <div class="detail-pity">
+                    <hr color="white ">
+                    <ion-chip outline color="light" *ngFor="let star of model.starData.get(banner.Name)">
                         <ion-label>{{star.name}} <span>{{star.pity}}</span></ion-label>
                     </ion-chip>
-                    </div>
-                    </div>
-                    <div *ngIf="chartData.get(banner.Name)[0].labels.length == 0 && i == 3"
-                        style="text-align: center; color: white; transform: translateY(100px);">Please
-                        Select An
-                        Account
-                    </div>
-                    </ng-container>
+                </div>
+            </div>
+            <div *ngIf="model.chartData.get(banner.Name)[0].labels.length == 0 && i == 3" style="text-align: center; color: white; transform: translateY(100px);">Please Select An Account
+            </div>
+        </ng-container>
     </div>
 
     <!-- <div class="box box2 ">

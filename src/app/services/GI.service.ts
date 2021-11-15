@@ -31,17 +31,16 @@ export class GIService {
 
   searchAccount(query: string) {
     return this.db.object('users/' + query).valueChanges();
-  }
+  } 
 
   getDataGacha(url: string) {
-    debugger;
     if (!url.includes('authkey=')) {
       this.toastCtrl.create({ message: 'URL Not Valid' });
       return;
     }
 
     url = this.createUri(url, '100', 0, '0');
-    this.httpClient.get(url).subscribe((res) => {});
+    return this.httpClient.get(url);
   }
 
   private createUri(

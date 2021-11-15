@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, ModalController } from '@ionic/angular';
+import { Model } from 'src/app/models/baseModel';
 import { GIService } from 'src/app/services/GI.service';
 
 @Component({
@@ -9,11 +10,13 @@ import { GIService } from 'src/app/services/GI.service';
   styleUrls: ['./account.component.scss'],
 })
 export class AccountComponent implements OnInit {
+  model: Model;
   type: 'Add' | 'Refresh' | 'Search';
   formGroup: FormGroup;
+  toast: Promise<void>;
   constructor(
     private fb: FormBuilder,
-    private modal: ModalController,
+    private modalCtrl: ModalController,
     private service: GIService,
     private alertController: AlertController
   ) {
@@ -27,10 +30,12 @@ export class AccountComponent implements OnInit {
     return this.formGroup.controls[formControlName].valid;
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    console.log(this.model);
+  }
 
   onDismiss() {
-    this.modal.dismiss();
+    this.modalCtrl.dismiss();
   }
 
   onBlur(event: any, formControlName) {
@@ -42,14 +47,18 @@ export class AccountComponent implements OnInit {
   }
 
   saveAccount() {
-    this.service.getDataGacha(this.formGroup.get('url').value);
+    this.service.getDataGacha(this.formGroup.get('url').value).subscribe((res) => {
+
+    });
   }
 
   searchAccount() {
+    if (this.model.savedAccount.includes(this.formGroup.get('name').value)) {
+
+    }
     this.service
       .searchAccount(this.formGroup.get('name').value)
       .subscribe(async (res) => {
-        debugger;
         if (res) {
           let confirm = await this.alertController.create({
             header: 'Account Found',

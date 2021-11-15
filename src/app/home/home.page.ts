@@ -5,56 +5,12 @@ import {
   ModalController,
   ToastController,
 } from '@ionic/angular';
-import {
-  ApexAxisChartSeries,
-  ApexChart,
-  ApexDataLabels,
-  ApexFill,
-  ApexGrid,
-  ApexLegend,
-  ApexMarkers,
-  ApexPlotOptions,
-  ApexStroke,
-  ApexTitleSubtitle,
-  ApexTooltip,
-  ApexXAxis,
-  ApexYAxis,
-} from 'ng-apexcharts';
+import { Model } from '../models/baseModel';
+import { ChartOptions } from '../models/chart';
 import { GIService } from '../services/GI.service';
 import { AccountComponent } from './account/account.component';
 
-export type ChartOptions = {
-  chart: ApexChart;
-  series: ApexAxisChartSeries | any[];
-  stroke: ApexStroke;
-  markers: ApexMarkers;
-  grid: ApexGrid;
-  tooltip: ApexTooltip;
-  colors: any[];
-  labels: any[];
-  xaxis: ApexXAxis;
-  yaxis: ApexYAxis;
-  title: ApexTitleSubtitle;
-  subtitle: ApexTitleSubtitle;
-  dataLabels: ApexDataLabels;
-  legend: ApexLegend;
-  fill: ApexFill;
-  plotOptions: ApexPlotOptions;
-};
 
-export type ChartData = {
-  data: number[];
-  labels: string[];
-};
-
-export type ChipData = {
-  star: Star;
-};
-
-export type Star = {
-  name: string;
-  pity: number;
-};
 
 @Component({
   selector: 'app-home',
@@ -62,19 +18,7 @@ export type Star = {
   styleUrls: ['home.page.scss'],
 })
 export class HomePage implements OnInit {
-  public chartData = new Map<String, ChartData[]>();
-  public chipData = new Map<String, Star[]>();
-  public enableSort: boolean = true;
-  public selectedAccount: string = '1';
-  public savedAccount: string[];
-  public data: any[] = [];
-  public isLoading: boolean = false;
-  public bannerType: any[] = [
-    { Name: 'Beginner' },
-    { Name: 'Standart' },
-    { Name: 'Weapon' },
-    { Name: 'Character' },
-  ];
+  public model = new Model();
   public options: Partial<ChartOptions>;
 
   constructor(
@@ -82,57 +26,58 @@ export class HomePage implements OnInit {
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
     private service: GIService
-  ) {}
+  ) { }
 
   private init() {
     let banner = localStorage.getItem('banner');
     let account = localStorage.getItem('selectedAccount');
     let accountData = localStorage.getItem('account');
     let sort = localStorage.getItem('sort');
-    if (banner) this.bannerType = JSON.parse(banner);
+    if (banner) this.model.bannerType = JSON.parse(banner);
 
-    if (account) this.selectedAccount = account;
+    if (account) this.model.selectedAccount = account;
 
-    if (sort) this.enableSort = Boolean(sort);
+    if (sort) this.model.disableSort = Boolean(sort);
 
     if (accountData) {
-      this.savedAccount = JSON.parse(accountData);
+      this.model.savedAccount = JSON.parse(accountData);
     }
     this.spackLine();
   }
 
   async ngOnInit() {
-    this.isLoading = true;
+    this.model.isLoading = true;
     let now = performance.now();
     this.init();
     await this.getSeries();
     let end = performance.now();
     console.log('time taken', end - now);
-    this.isLoading = false;
+    this.model.isLoading = false;
   }
 
   async openModal(type: 'Add' | 'Refresh' | 'Search') {
     const modal = await this.modalCtrl.create({
       component: AccountComponent,
-      componentProps: { type: type },
+      componentProps: { type: type, model: this.model },
     });
     return await modal.present();
   }
 
   drop(event: CdkDragDrop<string[]>) {
-    moveItemInArray(this.bannerType, event.previousIndex, event.currentIndex);
-    let tempArray = this.bannerType[event.currentIndex];
-    let tempArray2 = this.bannerType[event.previousIndex];
-    this.bannerType[event.currentIndex] = tempArray;
-    this.bannerType[event.previousIndex] = tempArray2;
-    localStorage.setItem('banner', JSON.stringify(this.bannerType));
+    moveItemInArray(this.model.bannerType, event.previousIndex, event.currentIndex);
+    let tempArray = this.model.bannerType[event.currentIndex];
+    let tempArray2 = this.model.bannerType[event.previousIndex];
+    this.model.bannerType[event.currentIndex] = tempArray;
+    this.model.bannerType[event.previousIndex] = tempArray2;
+    localStorage.setItem('banner', JSON.stringify(this.model.bannerType));
   }
 
   async getSeries() {
-    for (let i = 0; i < this.bannerType.length; i++) {
+    //Get every banner data from database
+    for (let i = 0; i < this.model.bannerType.length; i++) {
       let data: any = await new Promise((resolve, reject) => {
         this.service
-          .getListBanner(this.selectedAccount, this.bannerType[i].Name)
+          .getListBanner(this.model.selectedAccount, this.model.bannerType[i].Name)
           .subscribe(
             (res: any) => {
               resolve(res.reverse());
@@ -143,25 +88,26 @@ export class HomePage implements OnInit {
             }
           );
       });
-      let data5star = await this.get5star(this.bannerType[i].Name);
-      this.chipData.set(this.bannerType[i].Name, Object.values(data5star));
-      let dataValue: any[] = Object.values(this.groupBy(data));
-      dataValue = dataValue.slice(dataValue.length - 5);
-      let value: number[] = [];
-      for (let j = 0; j < dataValue.length; j++) {
-        value.push(dataValue[j].length);
+      //Get every 5 stars and pity
+      let data5star = await this.get5star(this.model.bannerType[i].Name);
+      this.model.starData.set(this.model.bannerType[i].Name, Object.values(data5star));
+      let dataSeries: any[] = Object.values(this.groupBy(data));
+      dataSeries = dataSeries.slice(dataSeries.length - 5);
+      let series: number[] = [];
+      for (let j = 0; j < dataSeries.length; j++) {
+        series.push(dataSeries[j].length);
       }
-      let dataLabels = Object.keys(this.groupBy(data));
-      dataLabels = dataLabels.slice(dataLabels.length - 5);
-      this.chartData.set(this.bannerType[i].Name, [
-        { data: value, labels: dataLabels },
+      let labels = Object.keys(this.groupBy(data));
+      labels = labels.slice(labels.length - 5);
+      this.model.chartData.set(this.model.bannerType[i].Name, [
+        { data: series, labels: labels },
       ]);
     }
   }
 
   async get5star(bannerName: string) {
     let data5star = await new Promise((resolve, reject) => {
-      this.service.getPity(this.selectedAccount, bannerName).subscribe(
+      this.service.getPity(this.model.selectedAccount, bannerName).subscribe(
         (res: any) => {
           resolve(res);
         },
@@ -174,6 +120,11 @@ export class HomePage implements OnInit {
     return data5star;
   }
 
+  /**
+   * Grouping data with date
+   * @param data 
+   * @returns Object with date as key
+   */
   groupBy(data: any[]) {
     return data.reduce(function (r, a) {
       r[a.time.split(' ')[0]] = r[a.time.split(' ')[0]] || [];
@@ -183,7 +134,7 @@ export class HomePage implements OnInit {
   }
 
   async onChangeAccount() {
-    localStorage.setItem('selectedAccount', this.selectedAccount);
+    localStorage.setItem('selectedAccount', this.model.selectedAccount);
     await this.ngOnInit();
   }
 
@@ -249,7 +200,7 @@ export class HomePage implements OnInit {
   async openAlert() {
     let alert = await this.alertCtrl.create({
       header: 'Delete Account',
-      message: `Are You Sure Delete ${this.selectedAccount} account?`,
+      message: `Are You Sure Delete ${this.model.selectedAccount} account?`,
       buttons: [
         {
           text: 'Cancel',
@@ -259,7 +210,7 @@ export class HomePage implements OnInit {
           handler: async () => {
             let account = JSON.parse(localStorage.getItem('account'));
             let filterAccount = account.filter(
-              (x) => x !== this.selectedAccount
+              (x) => x !== this.model.selectedAccount
             );
             localStorage.setItem('selectedAccount', '1');
             localStorage.setItem('account', JSON.stringify(filterAccount));
